@@ -9,7 +9,7 @@ const { validateDbId, raiseRecord404Error } = require('../middlewares');
 
 router.get('/', (req, res, next) => {
     employeeCrud.getAll()
-        .then(data => res.send(data))
+        .then(data => res.send(data.reverse()))
         .catch(err => next(err))
 })
 
