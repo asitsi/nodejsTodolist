@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-
+const axios = require('axios');
 const Employee = require('../models/employee.model')
 const { generateCrudMethods } = require('../services')
 const employeeCrud = generateCrudMethods(Employee)
@@ -46,5 +46,65 @@ router.delete('/:id', validateDbId, (req, res) => {
         .catch(err => next(err))
 })
 
+// OpenAI Chat Completion Route
+router.post('/openai', async (req, res) => {
+  const { messages } = req.body;
+
+  if (!messages) {
+    return res.status(400).json({ error: 'Invalid request: ask again.' });
+  }
+
+  try {
+    const openaiResponse = await axios.post(
+      process.env.CHAT_GPT_URL,
+      {
+        model: 'gpt-4o-mini',
+        messages: [{role: "user", content: messages}],
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.CHAT_GPT_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    res.status(200).json(openaiResponse.data);
+  } catch (error) {
+    console.error('OpenAI error:', error.message);
+    res.status(500).json({ error: 'Failed to call OpenAI API', details: error.message });
+  }
+});
+
+// Deepseek Chat Completion Route
+router.post('/deepseek', async (req, res) => {
+  const { messages } = req.body;
+
+  if (!messages) {
+    return res.status(400).json({ error: 'Invalid request: ask again.' });
+  }
+
+  try {
+    const openaiResponse = await axios.post(
+      process.env.DEEPSEEK_URL,
+      {
+        model: "deepseek/deepseek-r1:free",
+        messages: [{role: "user", content: messages}],
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    res.status(200).json(openaiResponse.data);
+  } catch (error) {
+    console.error('OpenAI error:', error.message);
+    res.status(500).json({ error: 'Failed to call OpenAI API', details: error.message });
+  }
+});
 
 module.exports = router
