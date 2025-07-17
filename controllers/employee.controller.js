@@ -103,7 +103,36 @@ router.post('/deepseek', async (req, res) => {
     res.status(200).json(openaiResponse.data);
   } catch (error) {
     console.error('OpenAI error:', error.message);
-    res.status(500).json({ error: 'Failed to call OpenAI API', details: error.message });
+    res.status(500).json({ error: 'Failed to call DeepSeek API', details: error.message });
+  }
+});
+
+router.post('/deepseekpaid', async (req, res) => {
+  const { messages } = req.body;
+
+  if (!messages) {
+    return res.status(400).json({ error: 'Invalid request: ask again.' });
+  }
+
+  try {
+    const openaiResponse = await axios.post(
+      process.env.PAID_DEEPSEEK_URL,
+      {
+        model: "deepseek-chat",
+        messages: [{role: "system", content: messages}],
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.PAID_DEEPSEEK_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    res.status(200).json(openaiResponse.data);
+  } catch (error) {
+    console.error('OpenAI error:', error.message);
+    res.status(500).json({ error: 'Failed to call DeepSeek API', details: error.message });
   }
 });
 
